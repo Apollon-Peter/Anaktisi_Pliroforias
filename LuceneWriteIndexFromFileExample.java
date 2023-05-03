@@ -1,5 +1,8 @@
 package com.howtodoinjava.demo.lucene.file;
- 
+
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.util.Scanner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -94,7 +97,7 @@ public class LuceneWriteIndexFromFileExample
         }
     }
  
-    static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException
+    /*static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException
     {
         try (InputStream stream = Files.newInputStream(file))
         {
@@ -111,5 +114,32 @@ public class LuceneWriteIndexFromFileExample
             //by a reader on the same index
             writer.updateDocument(new Term("path", file.toString()), doc);
         }
+    }*/
+    
+    static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
+        String name = file.toString();
+    	Scanner reader = null;
+    	try {
+        	reader = new Scanner(new FileInputStream(name));
+            int sentenceCount = 1;
+            while (reader.hasNextLine()) {
+                String line = reader.nextLine();
+                String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
+                for (String sentence : sentences) {
+                    //Create lucene Document
+                    Document doc = new Document();
+                    doc.add(new StringField("path", file.toString() + "-" + sentenceCount, Field.Store.YES));
+                    doc.add(new LongPoint("modified", lastModified));
+                    doc.add(new TextField("contents", sentence, Store.YES));
+                    writer.addDocument(doc);
+                    sentenceCount++;
+                }
+            }
+        }
+    	catch(FileNotFoundException e){
+        	System.out.println("File not found");
+        	System.exit(0);
+        }
+    	
     }
 }

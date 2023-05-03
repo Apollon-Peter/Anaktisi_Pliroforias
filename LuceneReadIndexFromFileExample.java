@@ -26,7 +26,7 @@ public class LuceneReadIndexFromFileExample
         IndexSearcher searcher = createSearcher();
          
         //Search indexed contents using search term
-        TopDocs foundDocs = searchInContent("Taylor Swift", searcher);
+        TopDocs foundDocs = searchInContent("Eminem", searcher);
          
         //Total found documents
         System.out.println("Total Results :: " + foundDocs.totalHits);
@@ -35,9 +35,8 @@ public class LuceneReadIndexFromFileExample
         for (ScoreDoc sd : foundDocs.scoreDocs)
         {
             Document d = searcher.doc(sd.doc);
-            System.out.println("Path : "+ d.get("path") + ", Contents : " + d.get("contents")+ ", Score : " + sd.score);
+            System.out.println("Path : "+ d.get("path") + ", " + ", Score : " + sd.score);
         }
-        //System.out.println("Total Results :: " + foundDocs.totalHits);
     }
      
     private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
@@ -47,7 +46,7 @@ public class LuceneReadIndexFromFileExample
         Query query = qp.parse(textToFind);
          
         //search the index
-        TopDocs hits = searcher.search(query, 10);
+        TopDocs hits = searcher.search(query, 1000);
         return hits;
     }
  
