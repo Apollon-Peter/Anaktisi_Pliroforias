@@ -17,6 +17,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -126,11 +127,14 @@ public class LuceneWriteIndexFromFileExample
                 String line = reader.nextLine();
                 String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
                 for (String sentence : sentences) {
+                	String arithmos = Integer.toString(sentenceCount);
                     //Create lucene Document
                     Document doc = new Document();
-                    doc.add(new StringField("path", file.toString() + "-" + sentenceCount, Field.Store.YES));
+                    doc.add(new StringField("path", file.toString(), Field.Store.YES));
                     doc.add(new LongPoint("modified", lastModified));
+                    doc.add(new StringField("arithmos", arithmos, Field.Store.YES));
                     doc.add(new TextField("contents", sentence, Store.YES));
+                    
                     writer.addDocument(doc);
                     sentenceCount++;
                 }

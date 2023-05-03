@@ -26,7 +26,7 @@ public class LuceneReadIndexFromFileExample
         IndexSearcher searcher = createSearcher();
          
         //Search indexed contents using search term
-        TopDocs foundDocs = searchInContent("Eminem", searcher);
+        TopDocs foundDocs = searchInContent("zeus", searcher);
          
         //Total found documents
         System.out.println("Total Results :: " + foundDocs.totalHits);
@@ -35,7 +35,7 @@ public class LuceneReadIndexFromFileExample
         for (ScoreDoc sd : foundDocs.scoreDocs)
         {
             Document d = searcher.doc(sd.doc);
-            System.out.println("Path : "+ d.get("path") + ", " + ", Score : " + sd.score);
+            System.out.println("Path : "+ d.get("path") + " , arithmos : " + d.get("arithmos") + " , Content : " + d.get("contents") + " , Score : " + sd.score);
         }
     }
      
