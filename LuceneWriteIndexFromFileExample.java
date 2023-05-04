@@ -3,6 +3,8 @@ package com.howtodoinjava.demo.lucene.file;
 import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.util.Scanner;
+
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -13,7 +15,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
  
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -24,10 +30,14 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
- 
+import org.apache.lucene.index.IndexOptions;
+import java.nio.file.Paths;
+
+
 public class LuceneWriteIndexFromFileExample
 {
     public static void main(String[] args)
@@ -46,9 +56,10 @@ public class LuceneWriteIndexFromFileExample
             //org.apache.lucene.store.Directory instance
             Directory dir = FSDirectory.open( Paths.get(indexPath) );
              
-            //analyzer with the default stop words
-            Analyzer analyzer = new StandardAnalyzer();
-             
+            //analyzer with the default stop words && stemming
+            CharArraySet stopWords = EnglishAnalyzer.getDefaultStopSet();
+            StandardAnalyzer analyzer = new StandardAnalyzer(stopWords);
+               
             //IndexWriter Configuration
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -127,14 +138,13 @@ public class LuceneWriteIndexFromFileExample
                 String line = reader.nextLine();
                 String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
                 for (String sentence : sentences) {
-                	String arithmos = Integer.toString(sentenceCount);
+                	String strSentence = Integer.toString(sentenceCount);
                     //Create lucene Document
                     Document doc = new Document();
                     doc.add(new StringField("path", file.toString(), Field.Store.YES));
                     doc.add(new LongPoint("modified", lastModified));
-                    doc.add(new StringField("arithmos", arithmos, Field.Store.YES));
                     doc.add(new TextField("contents", sentence, Store.YES));
-                    
+                    doc.add(new StringField("number", strSentence, Field.Store.YES));
                     writer.addDocument(doc);
                     sentenceCount++;
                 }
