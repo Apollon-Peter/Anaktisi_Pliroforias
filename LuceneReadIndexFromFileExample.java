@@ -1,8 +1,9 @@
 package com.howtodoinjava.demo.lucene.file;
  
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
- 
+import javax.swing.*;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -18,28 +19,74 @@ import org.apache.lucene.store.FSDirectory;
 public class LuceneReadIndexFromFileExample
 {
     //directory contains the lucene indexes
-    private static final String INDEX_DIR = "indexedFiles";
+    private final String INDEX_DIR = "indexedFiles";
  
-    public static void main(String[] args) throws Exception
+    public void ReadIndex(String filterName, String srch, JTextArea TextArea) throws Exception
     {
         //Create lucene searcher. It search over a single IndexReader.
         IndexSearcher searcher = createSearcher();
          
         //Search indexed contents using search term
-        TopDocs foundDocs = searchInContent("Eminem", searcher);
+        TopDocs foundDocs = searchInContent(srch, searcher);
          
         //Total found documents
-        System.out.println("Total Results :: " + foundDocs.totalHits);
+        //System.out.println("Total Results :: " + foundDocs.totalHits);
          
         //Let's print out the path of files which have searched term
-        for (ScoreDoc sd : foundDocs.scoreDocs)
-        {
-            Document d = searcher.doc(sd.doc);
-            System.out.println("Path : "+ d.get("path") + ", " + "Number of Sentence: " + d.get("number")+ ", Score : " + sd.score);
+        int filter = -1;
+        if (filterName == "No filter") {
+        	filter = 7;
+        }else if (filterName == "Artist") {
+        	filter = 2;
+        }else if (filterName == "Title") {
+        	filter = 3;
+        }else if (filterName == "Album") {
+        	filter = 4;
+        }else if (filterName == "Year") {
+        	filter = 5;
+        }else if (filterName == "Date") {
+        	filter = 6;
+        }else if (filterName == "Lyrics") {
+        	filter = 0;
+        }
+        
+        boolean filters = true;
+        if (filter == 7) {
+        	filters = false;
+        }
+        
+        for (ScoreDoc sd: foundDocs.scoreDocs) {
+        	Document d = searcher.doc(sd.doc);
+        	int num = Integer.parseInt(d.get("number"));
+            int temp = (num-(num/7)*7);
+        	if (filters)
+            {
+                if (temp == filter) {
+                    TextArea.append("\n	" + d.get("contents") + "\n");
+                    //Here we have to increase the counter for when we count up to 10 prints (also on line 84)
+                }
+            }else {
+                String filterCat = "";
+                if (temp == 0) {
+                	filterCat = "Lyrics";
+                }else if (temp == 2) {
+                	filterCat = "Artist";
+                }else if (temp == 3) {
+                	filterCat = "Title";
+                }else if (temp == 4) {
+                	filterCat = "Album";
+                }else if (temp == 5) {
+                	filterCat = "Year";
+                }else if (temp == 6) {
+                	filterCat = "Date";
+                }
+                TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
+                //Here we have to increase the counter as well for when we count up to 10 prints (also on line 66)
+            }
         }
     }
      
-    private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
+    private TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
     {
         //Create search query
         QueryParser qp = new QueryParser("contents", new StandardAnalyzer());
@@ -50,7 +97,7 @@ public class LuceneReadIndexFromFileExample
         return hits;
     }
  
-    private static IndexSearcher createSearcher() throws IOException
+    private IndexSearcher createSearcher() throws IOException
     {
         Directory dir = FSDirectory.open(Paths.get(INDEX_DIR));
          
