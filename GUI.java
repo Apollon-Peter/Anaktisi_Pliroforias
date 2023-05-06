@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
-import com.howtodoinjava.demo.lucene.file.LuceneReadIndexFromFileExample;
-import com.howtodoinjava.demo.lucene.file.LuceneWriteIndexFromFileExample;
+import com.howtodoinjava.demo.lucene.file.ReadIndex;
+import com.howtodoinjava.demo.lucene.file.WriteIndex;
 
 public class GUI extends JFrame implements ActionListener {
     private JTextField searchField;
@@ -20,13 +20,13 @@ public class GUI extends JFrame implements ActionListener {
     private String searchHistory;
     private String selectedOption;
     private String searchText;
-    private static LuceneReadIndexFromFileExample Read;
+    private static ReadIndex Read;
     public JTextArea searchResultsArea;
 
     public GUI() throws Exception
     {
         // Set up the JFrame
-        super("Dropdown Search Bar Demo");
+        super("Songs: Search Engine");
         setSize(600, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -124,9 +124,9 @@ public class GUI extends JFrame implements ActionListener {
     		FileUtils.deleteDirectory(file);
 
     		file.delete();
-    		LuceneReadIndexFromFileExample Reader = new LuceneReadIndexFromFileExample();
+    		ReadIndex Reader = new ReadIndex();
     		Read = Reader;
-    		LuceneWriteIndexFromFileExample Writer = new LuceneWriteIndexFromFileExample();
+    		WriteIndex Writer = new WriteIndex();
         	Writer.WriteIndex();
             GUI demo = new GUI();
     	}catch (Exception err) {
