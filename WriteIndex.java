@@ -3,39 +3,26 @@ package com.howtodoinjava.demo.lucene.file;
 import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.util.Scanner;
-
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
- 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
-import org.apache.lucene.analysis.en.PorterStemFilter;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexableFieldType;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.index.IndexOptions;
-import java.nio.file.Paths;
 
 
 public class WriteIndex
@@ -116,6 +103,7 @@ public class WriteIndex
         	reader = new Scanner(new FileInputStream(name));
             int sentenceCount = 1;
             while (reader.hasNextLine()) {
+            	int pos = 1;
                 String line = reader.nextLine();
                 String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
                 for (String sentence : sentences) {
@@ -126,9 +114,32 @@ public class WriteIndex
                     //doc.add(new LongPoint("modified", lastModified));
                     doc.add(new TextField("contents", sentence, Store.YES));
                     doc.add(new StringField("number", strSentence, Field.Store.YES));
+                    if (sentenceCount > 7) {
+                    	if (pos == 2) {
+                        	doc.add(new TextField("song", sentences[pos], Store.YES));
+                        	doc.add(new TextField("artist", "", Store.YES));
+                        }else if (pos == 3) {
+                        	doc.add(new TextField("song", "", Store.YES));
+                        	doc.add(new TextField("artist", sentences[pos-2], Store.YES));
+                        }else if (pos == 4) {
+                        	doc.add(new TextField("song", "", Store.YES));
+                        	doc.add(new TextField("artist", sentences[pos-3], Store.YES));
+                        }else if (pos == 5) {
+                        	doc.add(new TextField("song", sentences[pos-3], Store.YES));
+                        	doc.add(new TextField("artist", sentences[pos-4], Store.YES));
+                        }else if (pos == 6) {
+                        	doc.add(new TextField("song", sentences[pos-4], Store.YES));
+                        	doc.add(new TextField("artist", sentences[pos-5], Store.YES));
+                        }else if (pos == 7) {
+                        	doc.add(new TextField("song", sentences[pos-5], Store.YES));
+                        	doc.add(new TextField("artist", sentences[pos-6], Store.YES));
+                        }
+                    }
+                    
                     //doc.add(new TextField(""));
                     writer.addDocument(doc);
                     sentenceCount++;
+                    pos ++;
                 }
             }
         }

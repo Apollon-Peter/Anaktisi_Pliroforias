@@ -3,17 +3,10 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.IOException;
 import org.apache.commons.io.FileUtils;
-import com.howtodoinjava.demo.lucene.file.ReadIndex;
-import com.howtodoinjava.demo.lucene.file.WriteIndex;
 
 public class GUI extends JFrame implements ActionListener {
     private JTextField searchField;
@@ -157,7 +150,7 @@ public class GUI extends JFrame implements ActionListener {
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
+    		String filePath = "C:\\Users\\apoll\\Downloads\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 

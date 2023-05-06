@@ -1,7 +1,6 @@
 package com.howtodoinjava.demo.lucene.file;
  
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.swing.*;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -71,7 +70,7 @@ public class ReadIndex
             {
                 if (temp == filter) {
                 	if (counter < ceiling && counter >= floor) {
-                		TextArea.append("\n	" + d.get("contents") + "\n");
+                		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + d.get("contents") + "\n");
                 		num_prints ++;
                 	}
                     counter ++;
@@ -92,12 +91,15 @@ public class ReadIndex
                 	filterCat = "Date";
                 }
                 if (counter < ceiling && counter >= floor) {
-                	TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
+            		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + filterCat + " - " + d.get("contents") + "\n");
                 	num_prints ++;
                 }
             	counter ++;
             }
         }
+                
+        //TextArea.replaceRange("", 0, );
+        
         if (num_prints == 0) {
         	TextArea.append("\n	No results were found!");
         }
@@ -172,7 +174,7 @@ public class ReadIndex
             {
                 if (temp == filter) {
                 	if (counter < ceiling && counter >= floor) {
-                		TextArea.append("\n	" + d.get("contents") + "\n");
+                		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + d.get("contents") + "\n");
                 		num_prints ++;
                 	}
                     counter ++;
@@ -193,7 +195,7 @@ public class ReadIndex
                 	filterCat = "Date";
                 }
                 if (counter < ceiling && counter >= floor) {
-                	TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
+            		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + filterCat + " - " + d.get("contents") + "\n");
                 	num_prints ++;
                 }
                 counter ++;
