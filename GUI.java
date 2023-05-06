@@ -7,15 +7,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import com.howtodoinjava.demo.lucene.file.LuceneReadIndexFromFileExample;
 import com.howtodoinjava.demo.lucene.file.LuceneWriteIndexFromFileExample;
 
 public class GUI extends JFrame implements ActionListener {
     private JTextField searchField;
     private JComboBox<String> searchDropdown;
+    private JButton nextResultsButton;
     private JButton searchButton;
     private JButton searchHistoryButton;
     private String searchHistory;
+    private String selectedOption;
+    private String searchText;
+    private static LuceneReadIndexFromFileExample Read;
     public JTextArea searchResultsArea;
 
     public GUI() throws Exception
@@ -45,6 +50,12 @@ public class GUI extends JFrame implements ActionListener {
         searchBarPanel.add(searchButton);
         searchButton.addActionListener(this);
 
+        // Add the next 10 results button
+        nextResultsButton = new JButton("Next 10 results");
+        searchBarPanel.add(nextResultsButton);
+        nextResultsButton.addActionListener(this);
+        nextResultsButton.setEnabled(false);
+        
         // Add the search history button
         searchHistoryButton = new JButton("Search History");
         searchBarPanel.add(searchHistoryButton);
@@ -63,10 +74,9 @@ public class GUI extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e)
     {
-    	LuceneReadIndexFromFileExample Read = new LuceneReadIndexFromFileExample();
         if (e.getSource() == searchButton) {
-            String selectedOption = (String) searchDropdown.getSelectedItem();
-            String searchText = searchField.getText();
+            selectedOption = (String) searchDropdown.getSelectedItem();
+            searchText = searchField.getText();
             // Perform search operation based on selectedOption and searchText
             String searchResult = "";
             if (selectedOption.equals("No filter")) {
@@ -82,30 +92,41 @@ public class GUI extends JFrame implements ActionListener {
             	System.out.println("Error occured " + err.getMessage());
             }
             searchHistory += searchResult + searchText + "\n";
+            nextResultsButton.setEnabled(true);
         } else if (e.getSource() == searchHistoryButton) {
             // Display the search history
             JOptionPane.showMessageDialog(this, "Search history:\n" + searchHistory);
+        } else if (e.getSource() == nextResultsButton) {
+            // Perform search operation based on selectedOption and searchText
+            String searchResult = "";
+            if (selectedOption.equals("No filter")) {
+                searchResult = "You searched with no filter: ";
+            } else {
+                searchResult = "You searched for " + selectedOption + ": ";
+            }
+            searchResultsArea.setText(""); // clear the search results area
+            searchResultsArea.append(searchResult + "\n");
+            try {
+                Read.nextResults(selectedOption, searchText, searchResultsArea);
+            }catch (Exception err) {
+            	System.out.println("Error occured " + err.getMessage());
+            }
         }
     }
-    
-    public static void deleteFile(String filePath) throws IOException {
-    	Path fileToDelete = Paths.get(filePath);
-        Files.deleteIfExists(fileToDelete);
-    }
-    
-    /*public static void DeleteFolder()
-    {
-    	String FolderPath = ;
-    	File folder = new File(FolderPath);
-    	boolean deleted = folder.delete();
-    }*/
-
 
     public static void main(String[] args)
     {
     	try {
-    		//deleteFile("C:/Users/apoll/Downloads/LuceneDemo/indexedFiles");
-        	LuceneWriteIndexFromFileExample Writer = new LuceneWriteIndexFromFileExample();
+    		String filePath = "C:/Users/apoll/Downloads/LuceneDemo/indexedFiles";
+
+    		File file = new File(filePath);
+
+    		FileUtils.deleteDirectory(file);
+
+    		file.delete();
+    		LuceneReadIndexFromFileExample Reader = new LuceneReadIndexFromFileExample();
+    		Read = Reader;
+    		LuceneWriteIndexFromFileExample Writer = new LuceneWriteIndexFromFileExample();
         	Writer.WriteIndex();
             GUI demo = new GUI();
     	}catch (Exception err) {

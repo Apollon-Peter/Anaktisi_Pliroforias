@@ -20,6 +20,10 @@ public class LuceneReadIndexFromFileExample
 {
     //directory contains the lucene indexes
     private final String INDEX_DIR = "indexedFiles";
+    private int floor = 0;
+    private int num_prints = 0;
+    private int counter = 0;
+    private int ceiling = 10;
  
     public void ReadIndex(String filterName, String srch, JTextArea TextArea) throws Exception
     {
@@ -31,8 +35,12 @@ public class LuceneReadIndexFromFileExample
          
         //Total found documents
         //System.out.println("Total Results :: " + foundDocs.totalHits);
-         
-        //Let's print out the path of files which have searched term
+                 
+        floor = 0;
+        num_prints = 0;
+        counter = 0;
+        ceiling = 10;
+        
         int filter = -1;
         if (filterName == "No filter") {
         	filter = 7;
@@ -53,7 +61,7 @@ public class LuceneReadIndexFromFileExample
         boolean filters = true;
         if (filter == 7) {
         	filters = false;
-        }
+        }        
         
         for (ScoreDoc sd: foundDocs.scoreDocs) {
         	Document d = searcher.doc(sd.doc);
@@ -62,8 +70,11 @@ public class LuceneReadIndexFromFileExample
         	if (filters)
             {
                 if (temp == filter) {
-                    TextArea.append("\n	" + d.get("contents") + "\n");
-                    //Here we have to increase the counter for when we count up to 10 prints (also on line 84)
+                	if (counter < ceiling && counter >= floor) {
+                		TextArea.append("\n	" + d.get("contents") + "\n");
+                		num_prints ++;
+                	}
+                    counter ++;
                 }
             }else {
                 String filterCat = "";
@@ -80,9 +91,15 @@ public class LuceneReadIndexFromFileExample
                 }else if (temp == 6) {
                 	filterCat = "Date";
                 }
-                TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
-                //Here we have to increase the counter as well for when we count up to 10 prints (also on line 66)
+                if (counter < ceiling && counter >= floor) {
+                	TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
+                	num_prints ++;
+                }
+            	counter ++;
             }
+        }
+        if (num_prints == 0) {
+        	TextArea.append("\n	No results were found!");
         }
     }
      
@@ -107,5 +124,83 @@ public class LuceneReadIndexFromFileExample
         //Index searcher
         IndexSearcher searcher = new IndexSearcher(reader);
         return searcher;
+    }
+    
+    public void nextResults(String filterName, String srch, JTextArea TextArea) throws Exception
+    {
+        //Create lucene searcher. It search over a single IndexReader.
+        IndexSearcher searcher = createSearcher();
+         
+        //Search indexed contents using search term
+        TopDocs foundDocs = searchInContent(srch, searcher);
+         
+        //Total found documents
+        //System.out.println("Total Results :: " + foundDocs.totalHits);
+                
+        floor += 10;
+        num_prints = 0;
+        counter = 0;
+        ceiling += 10;   
+        
+        int filter = -1;
+        if (filterName == "No filter") {
+        	filter = 7;
+        }else if (filterName == "Artist") {
+        	filter = 2;
+        }else if (filterName == "Title") {
+        	filter = 3;
+        }else if (filterName == "Album") {
+        	filter = 4;
+        }else if (filterName == "Year") {
+        	filter = 5;
+        }else if (filterName == "Date") {
+        	filter = 6;
+        }else if (filterName == "Lyrics") {
+        	filter = 0;
+        }
+        
+        boolean filters = true;
+        if (filter == 7) {
+        	filters = false;
+        }
+                
+        for (ScoreDoc sd: foundDocs.scoreDocs) {
+        	Document d = searcher.doc(sd.doc);
+        	int num = Integer.parseInt(d.get("number"));
+            int temp = (num-(num/7)*7);
+        	if (filters)
+            {
+                if (temp == filter) {
+                	if (counter < ceiling && counter >= floor) {
+                		TextArea.append("\n	" + d.get("contents") + "\n");
+                		num_prints ++;
+                	}
+                    counter ++;
+                }
+            }else {
+                String filterCat = "";
+                if (temp == 0) {
+                	filterCat = "Lyrics";
+                }else if (temp == 2) {
+                	filterCat = "Artist";
+                }else if (temp == 3) {
+                	filterCat = "Title";
+                }else if (temp == 4) {
+                	filterCat = "Album";
+                }else if (temp == 5) {
+                	filterCat = "Year";
+                }else if (temp == 6) {
+                	filterCat = "Date";
+                }
+                if (counter < ceiling && counter >= floor) {
+                	TextArea.append("\n	" + filterCat + " - " + d.get("contents") + "\n");
+                	num_prints ++;
+                }
+                counter ++;
+            }
+        }
+        if (num_prints == 0) {
+        	TextArea.append("\n	No more results were found!");
+        }
     }
 }
