@@ -108,25 +108,6 @@ public class WriteIndex
             indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
         }
     }
- 
-    /*static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException
-    {
-        try (InputStream stream = Files.newInputStream(file))
-        {
-            //Create lucene Document
-            Document doc = new Document();
-             
-            doc.add(new StringField("path", file.toString(), Field.Store.YES));
-            doc.add(new LongPoint("modified", lastModified));
-            doc.add(new TextField("contents", new String(Files.readAllBytes(file)), Store.YES));
-             
-            //Updates a document by first deleting the document(s)
-            //containing <code>term</code> and then adding the new
-            //document.  The delete and then add are atomic as seen
-            //by a reader on the same index
-            writer.updateDocument(new Term("path", file.toString()), doc);
-        }
-    }*/
     
     static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
         String name = file.toString();
@@ -141,10 +122,11 @@ public class WriteIndex
                 	String strSentence = Integer.toString(sentenceCount);
                     //Create lucene Document
                     Document doc = new Document();
-                    doc.add(new StringField("path", file.toString(), Field.Store.YES));
-                    doc.add(new LongPoint("modified", lastModified));
+                    //doc.add(new StringField("path", file.toString(), Field.Store.YES));
+                    //doc.add(new LongPoint("modified", lastModified));
                     doc.add(new TextField("contents", sentence, Store.YES));
                     doc.add(new StringField("number", strSentence, Field.Store.YES));
+                    //doc.add(new TextField(""));
                     writer.addDocument(doc);
                     sentenceCount++;
                 }

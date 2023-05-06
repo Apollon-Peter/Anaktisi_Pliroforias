@@ -1,5 +1,9 @@
 package com.howtodoinjava.demo.lucene.file;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -74,7 +78,7 @@ public class GUI extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e)
     {
-        if (e.getSource() == searchButton) {
+    	if (e.getSource() == searchButton) {
             selectedOption = (String) searchDropdown.getSelectedItem();
             searchText = searchField.getText();
             // Perform search operation based on selectedOption and searchText
@@ -84,7 +88,7 @@ public class GUI extends JFrame implements ActionListener {
             } else {
                 searchResult = "You searched for " + selectedOption + ": ";
             }
-            searchResultsArea.setText(""); // clear the search results area
+            searchResultsArea.setText(""); // clear the search results area 
             searchResultsArea.append(searchResult + "\n");
             try {
                 Read.ReadIndex(selectedOption, searchText, searchResultsArea);
@@ -93,6 +97,24 @@ public class GUI extends JFrame implements ActionListener {
             }
             searchHistory += searchResult + searchText + "\n";
             nextResultsButton.setEnabled(true);
+            
+            //Highlight text
+            Highlighter highlighter = searchResultsArea.getHighlighter();
+            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+            String text = searchResultsArea.getText().toLowerCase();
+            String searchTerm = searchText.toLowerCase();
+            int pos = text.indexOf(searchTerm);
+            highlighter.removeAllHighlights();
+            while(pos>=0) {
+            	int endpos = pos + searchTerm.length();
+            	try {
+    				highlighter.addHighlight(pos, endpos, painter);
+    			} catch (BadLocationException e1) {
+    				e1.printStackTrace();
+    			}
+            	pos = text.indexOf(searchTerm, endpos);
+            }
+            
         } else if (e.getSource() == searchHistoryButton) {
             // Display the search history
             JOptionPane.showMessageDialog(this, "Search history:\n" + searchHistory);
@@ -111,13 +133,31 @@ public class GUI extends JFrame implements ActionListener {
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
+            
+          //Highlight text
+            Highlighter highlighter = searchResultsArea.getHighlighter();
+            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+            String text = searchResultsArea.getText().toLowerCase();
+            String searchTerm = searchText.toLowerCase();
+            int pos = text.indexOf(searchTerm);
+            highlighter.removeAllHighlights();
+            while(pos>=0) {
+            	int endpos = pos + searchTerm.length();
+            	try {
+    				highlighter.addHighlight(pos, endpos, painter);
+    			} catch (BadLocationException e1) {
+    				e1.printStackTrace();
+    			}
+            	pos = text.indexOf(searchTerm, endpos);
+            }
+            
         }
     }
 
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:/Users/apoll/Downloads/LuceneDemo/indexedFiles";
+    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 
