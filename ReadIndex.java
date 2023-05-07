@@ -101,7 +101,7 @@ public class ReadIndex
         //TextArea.replaceRange("", 0, );
         
         if (num_prints == 0) {
-        	TextArea.append("\n	No results were found!");
+        	TextArea.append("	No results were found!");
         }
     }
      
@@ -202,7 +202,7 @@ public class ReadIndex
             }
         }
         if (num_prints == 0) {
-        	TextArea.append("\n	No more results were found!");
+        	TextArea.append("	No more results were found!");
         }
     }
 }

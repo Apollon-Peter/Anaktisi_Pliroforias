@@ -135,8 +135,6 @@ public class WriteIndex
                         	doc.add(new TextField("artist", sentences[pos-6], Store.YES));
                         }
                     }
-                    
-                    //doc.add(new TextField(""));
                     writer.addDocument(doc);
                     sentenceCount++;
                     pos ++;

@@ -91,22 +91,35 @@ public class GUI extends JFrame implements ActionListener {
             searchHistory += searchResult + searchText + "\n";
             nextResultsButton.setEnabled(true);
             
-            //Highlight text
+          //Highlight text
             Highlighter highlighter = searchResultsArea.getHighlighter();
             Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
             String text = searchResultsArea.getText().toLowerCase();
             String searchTerm = searchText.toLowerCase();
+
             int pos = text.indexOf(searchTerm);
-            highlighter.removeAllHighlights();
-            while(pos>=0) {
-            	int endpos = pos + searchTerm.length();
-            	try {
-    				highlighter.addHighlight(pos, endpos, painter);
-    			} catch (BadLocationException e1) {
-    				e1.printStackTrace();
-    			}
-            	pos = text.indexOf(searchTerm, endpos);
+            int lineCount = searchResultsArea.getLineCount();
+            int startLine = Math.min(2, lineCount); // start searching from line 2 or last line if there are fewer than 2 lines
+
+            while(pos >= 0) {
+                try {
+					if (searchResultsArea.getLineOfOffset(pos) < startLine) {
+					    pos = text.indexOf(searchTerm, pos + searchTerm.length());
+					    continue; // skip highlighting if the search term is in the first 2 lines
+					}
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+                int endpos = pos + searchTerm.length();
+                try {
+                    highlighter.addHighlight(pos, endpos, painter);
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace();
+                }
+                pos = text.indexOf(searchTerm, endpos);
             }
+
             
         } else if (e.getSource() == searchHistoryButton) {
             // Display the search history
@@ -132,17 +145,32 @@ public class GUI extends JFrame implements ActionListener {
             Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
             String text = searchResultsArea.getText().toLowerCase();
             String searchTerm = searchText.toLowerCase();
+
             int pos = text.indexOf(searchTerm);
-            highlighter.removeAllHighlights();
-            while(pos>=0) {
-            	int endpos = pos + searchTerm.length();
-            	try {
-    				highlighter.addHighlight(pos, endpos, painter);
-    			} catch (BadLocationException e1) {
-    				e1.printStackTrace();
-    			}
-            	pos = text.indexOf(searchTerm, endpos);
+            int lineCount = searchResultsArea.getLineCount();
+            int startLine = Math.min(2, lineCount); // start searching from line 2 or last line if there are fewer than 2 lines
+
+            while(pos >= 0) {
+                try {
+					if (searchResultsArea.getLineOfOffset(pos) < startLine) {
+					    pos = text.indexOf(searchTerm, pos + searchTerm.length());
+					    continue; // skip highlighting if the search term is in the first 2 lines
+					}
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+                int endpos = pos + searchTerm.length();
+                try {
+                    highlighter.addHighlight(pos, endpos, painter);
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace();
+                }
+                pos = text.indexOf(searchTerm, endpos);
             }
+
+            
+           
             
         }
     }
@@ -150,7 +178,7 @@ public class GUI extends JFrame implements ActionListener {
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:\\Users\\apoll\\Downloads\\LuceneDemo\\indexedFiles";
+    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 
