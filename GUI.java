@@ -168,13 +168,9 @@ public class GUI extends JFrame implements ActionListener {
                 }
                 pos = text.indexOf(searchTerm, endpos);
             }
-
-            
-           
-            
         }
     }
-
+    
     public static void main(String[] args)
     {
     	try {
@@ -191,8 +187,7 @@ public class GUI extends JFrame implements ActionListener {
         	Writer.WriteIndex();
             GUI demo = new GUI();
     	}catch (Exception err) {
-        	System.out.println("Error occured omg noooo " + err.getMessage());
+        	System.out.println("Error occured " + err.getMessage());
     	}
     }
-
 }

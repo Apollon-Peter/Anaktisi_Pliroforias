@@ -31,10 +31,7 @@ public class ReadIndex
          
         //Search indexed contents using search term
         TopDocs foundDocs = searchInContent(srch, searcher);
-         
-        //Total found documents
-        //System.out.println("Total Results :: " + foundDocs.totalHits);
-                 
+                  
         floor = 0;
         num_prints = 0;
         counter = 0;
@@ -65,15 +62,15 @@ public class ReadIndex
         for (ScoreDoc sd: foundDocs.scoreDocs) {
         	Document d = searcher.doc(sd.doc);
         	int num = Integer.parseInt(d.get("number"));
-            int temp = (num-(num/7)*7);
+            int temp = (num-(num/7)*7); //the category of the document we are checking
         	if (filters)
             {
                 if (temp == filter) {
                 	if (counter < ceiling && counter >= floor) {
                 		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + d.get("contents") + "\n");
-                		num_prints ++;
+                		num_prints ++; //used for printing "no results"
                 	}
-                    counter ++;
+                    counter ++; //counting the num of hits
                 }
             }else {
                 String filterCat = "";
@@ -92,13 +89,11 @@ public class ReadIndex
                 }
                 if (counter < ceiling && counter >= floor) {
             		TextArea.append("\n	" + d.get("artist") + ": " + d.get("song") + " \n	" + filterCat + " - " + d.get("contents") + "\n");
-                	num_prints ++;
+                	num_prints ++; //used for printing "no results"
                 }
-            	counter ++;
+            	counter ++; //counting the num of hits
             }
         }
-                
-        //TextArea.replaceRange("", 0, );
         
         if (num_prints == 0) {
         	TextArea.append("	No results were found!");
@@ -135,9 +130,6 @@ public class ReadIndex
          
         //Search indexed contents using search term
         TopDocs foundDocs = searchInContent(srch, searcher);
-         
-        //Total found documents
-        //System.out.println("Total Results :: " + foundDocs.totalHits);
                 
         floor += 10;
         num_prints = 0;

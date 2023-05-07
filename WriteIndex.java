@@ -24,7 +24,6 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-
 public class WriteIndex
 {
     public static void WriteIndex()
@@ -110,8 +109,6 @@ public class WriteIndex
                 	String strSentence = Integer.toString(sentenceCount);
                     //Create lucene Document
                     Document doc = new Document();
-                    //doc.add(new StringField("path", file.toString(), Field.Store.YES));
-                    //doc.add(new LongPoint("modified", lastModified));
                     doc.add(new TextField("contents", sentence, Store.YES));
                     doc.add(new StringField("number", strSentence, Field.Store.YES));
                     if (sentenceCount > 7) {
@@ -145,6 +142,5 @@ public class WriteIndex
         	System.out.println("File not found");
         	System.exit(0);
         }
-    	
     }
 }
