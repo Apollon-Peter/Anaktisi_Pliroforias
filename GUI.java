@@ -19,12 +19,15 @@ public class GUI extends JFrame implements ActionListener {
     private String searchText;
     private static ReadIndex Read;
     public JTextArea searchResultsArea;
+    private JToggleButton sortButton;
+    public boolean sort = false;
+    public boolean sorted = false;
 
     public GUI() throws Exception
     {
         // Set up the JFrame
         super("Songs: Search Engine");
-        setSize(600, 300);
+        setSize(1000, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -57,7 +60,12 @@ public class GUI extends JFrame implements ActionListener {
         searchHistoryButton = new JButton("Search History");
         searchBarPanel.add(searchHistoryButton);
         searchHistoryButton.addActionListener(this);
-
+        
+      //Add the sortByYear Button
+        sortButton = new JToggleButton("Sort by Year");
+        searchBarPanel.add(sortButton);
+        sortButton.addActionListener(this);
+        
         // Add the search results area
         searchResultsArea = new JTextArea(10, 50);
         add(new JScrollPane(searchResultsArea), BorderLayout.CENTER);
@@ -68,113 +76,102 @@ public class GUI extends JFrame implements ActionListener {
         // Display the JFrame
         setVisible(true);
     }
-
-    public void actionPerformed(ActionEvent e)
-    {
-    	if (e.getSource() == searchButton) {
-            selectedOption = (String) searchDropdown.getSelectedItem();
-            searchText = searchField.getText();
-            // Perform search operation based on selectedOption and searchText
-            String searchResult = "";
-            if (selectedOption.equals("No filter")) {
-                searchResult = "You searched with no filter: ";
-            } else {
-                searchResult = "You searched for " + selectedOption + ": ";
-            }
-            searchResultsArea.setText(""); // clear the search results area 
-            searchResultsArea.append(searchResult + "\n");
-            try {
-                Read.ReadIndex(selectedOption, searchText, searchResultsArea);
-            }catch (Exception err) {
-            	System.out.println("Error occured " + err.getMessage());
-            }
-            searchHistory += searchResult + searchText + "\n";
-            nextResultsButton.setEnabled(true);
-            
-          //Highlight text
-            Highlighter highlighter = searchResultsArea.getHighlighter();
-            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-            String text = searchResultsArea.getText().toLowerCase();
-            String searchTerm = searchText.toLowerCase();
-
-            int pos = text.indexOf(searchTerm);
+    
+    public void Highlight() {
+    	//Highlight text
+        Highlighter highlighter = searchResultsArea.getHighlighter();
+        Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+        String text = searchResultsArea.getText().toLowerCase();
+        String[] searchTerm = searchText.toLowerCase().split(" ");
+        for (String i : searchTerm) {
+        	int pos = text.indexOf(i);
             int lineCount = searchResultsArea.getLineCount();
             int startLine = Math.min(2, lineCount); // start searching from line 2 or last line if there are fewer than 2 lines
 
             while(pos >= 0) {
                 try {
 					if (searchResultsArea.getLineOfOffset(pos) < startLine) {
-					    pos = text.indexOf(searchTerm, pos + searchTerm.length());
+					    pos = text.indexOf(i, pos + i.length());
 					    continue; // skip highlighting if the search term is in the first 2 lines
 					}
 				} catch (BadLocationException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-                int endpos = pos + searchTerm.length();
+                int endpos = pos + i.length();
                 try {
                     highlighter.addHighlight(pos, endpos, painter);
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
-                pos = text.indexOf(searchTerm, endpos);
+                pos = text.indexOf(i, endpos);
             }
+        }
+    }
 
-            
+    public void actionPerformed(ActionEvent e)
+    {
+    	if (e.getSource() == searchButton) {
+    		sorted = sort;
+            selectedOption = (String) searchDropdown.getSelectedItem();
+            searchText = searchField.getText();
+            // Perform search operation based on selectedOption and searchText
+            String searchResult = "";
+            String isSorted = "";
+            if(sorted) {
+            	isSorted = "The results are sorted by Year. || ";
+            }
+            if (selectedOption.equals("No filter")) {
+                searchResult = "You searched with no filter: ";
+            } else {
+                searchResult = "You searched with filter - " + selectedOption + ": ";
+            }
+            searchResultsArea.setText(""); // clear the search results area 
+            searchResultsArea.append(isSorted + searchResult + "\n");
+            try {
+                Read.ReadIndex(selectedOption, searchText, searchResultsArea, sorted);
+            }catch (Exception err) {
+            	System.out.println("Error occured " + err.getMessage());
+            }
+            searchHistory += searchResult + searchText + "\n";
+            nextResultsButton.setEnabled(true);
+            Highlight();
         } else if (e.getSource() == searchHistoryButton) {
             // Display the search history
             JOptionPane.showMessageDialog(this, "Search history:\n" + searchHistory);
         } else if (e.getSource() == nextResultsButton) {
             // Perform search operation based on selectedOption and searchText
             String searchResult = "";
+            String isSorted = "";
+            if(sorted) {
+            	isSorted = "The results are sorted by Year. || ";
+            }
             if (selectedOption.equals("No filter")) {
                 searchResult = "You searched with no filter: ";
             } else {
-                searchResult = "You searched for " + selectedOption + ": ";
+                searchResult = "You searched with filter - " + selectedOption + ": ";
             }
-            searchResultsArea.setText(""); // clear the search results area
-            searchResultsArea.append(searchResult + "\n");
+            searchResultsArea.setText(""); // clear the search results area 
+            searchResultsArea.append(isSorted + searchResult + "\n");
             try {
-                Read.nextResults(selectedOption, searchText, searchResultsArea);
+                Read.nextResults(selectedOption, searchText, searchResultsArea, sorted);
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
-            
-          //Highlight text
-            Highlighter highlighter = searchResultsArea.getHighlighter();
-            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-            String text = searchResultsArea.getText().toLowerCase();
-            String searchTerm = searchText.toLowerCase();
-
-            int pos = text.indexOf(searchTerm);
-            int lineCount = searchResultsArea.getLineCount();
-            int startLine = Math.min(2, lineCount); // start searching from line 2 or last line if there are fewer than 2 lines
-
-            while(pos >= 0) {
-                try {
-					if (searchResultsArea.getLineOfOffset(pos) < startLine) {
-					    pos = text.indexOf(searchTerm, pos + searchTerm.length());
-					    continue; // skip highlighting if the search term is in the first 2 lines
-					}
-				} catch (BadLocationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-                int endpos = pos + searchTerm.length();
-                try {
-                    highlighter.addHighlight(pos, endpos, painter);
-                } catch (BadLocationException e1) {
-                    e1.printStackTrace();
-                }
-                pos = text.indexOf(searchTerm, endpos);
-            }
+            Highlight();
+        }else if(e.getSource()== sortButton) {
+	        if (sort) {
+				sort = false;
+			}else{
+				sort = true;
+			}
         }
     }
     
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
+    		String filePath = "C:\\Users\\apoll\\Downloads\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 

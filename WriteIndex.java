@@ -18,6 +18,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -25,8 +27,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 public class WriteIndex
-{
-    public static void WriteIndex()
+{	
+    public void WriteIndex()
     {
         //Input folder
         String docsPath = "inputFiles";
@@ -36,9 +38,9 @@ public class WriteIndex
  
         //Input Path Variable
         final Path docDir = Paths.get(docsPath);
- 
+        
         try
-        {
+        {            
             //org.apache.lucene.store.Directory instance
             Directory dir = FSDirectory.open( Paths.get(indexPath) );
              
@@ -100,43 +102,30 @@ public class WriteIndex
     	Scanner reader = null;
     	try {
         	reader = new Scanner(new FileInputStream(name));
-            int sentenceCount = 1;
+        	String line = reader.nextLine();
             while (reader.hasNextLine()) {
-            	int pos = 1;
-                String line = reader.nextLine();
+                line = reader.nextLine();
                 String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
-                for (String sentence : sentences) {
-                	String strSentence = Integer.toString(sentenceCount);
-                    //Create lucene Document
-                    Document doc = new Document();
-                    doc.add(new TextField("contents", sentence, Store.YES));
-                    doc.add(new StringField("number", strSentence, Field.Store.YES));
-                    if (sentenceCount > 7) {
-                    	if (pos == 2) {
-                        	doc.add(new TextField("song", sentences[pos], Store.YES));
-                        	doc.add(new TextField("artist", "", Store.YES));
-                        }else if (pos == 3) {
-                        	doc.add(new TextField("song", "", Store.YES));
-                        	doc.add(new TextField("artist", sentences[pos-2], Store.YES));
-                        }else if (pos == 4) {
-                        	doc.add(new TextField("song", "", Store.YES));
-                        	doc.add(new TextField("artist", sentences[pos-3], Store.YES));
-                        }else if (pos == 5) {
-                        	doc.add(new TextField("song", sentences[pos-3], Store.YES));
-                        	doc.add(new TextField("artist", sentences[pos-4], Store.YES));
-                        }else if (pos == 6) {
-                        	doc.add(new TextField("song", sentences[pos-4], Store.YES));
-                        	doc.add(new TextField("artist", sentences[pos-5], Store.YES));
-                        }else if (pos == 7) {
-                        	doc.add(new TextField("song", sentences[pos-5], Store.YES));
-                        	doc.add(new TextField("artist", sentences[pos-6], Store.YES));
-                        }
-                    }
-                    writer.addDocument(doc);
-                    sentenceCount++;
-                    pos ++;
+                Document doc = new Document();
+                doc.add(new TextField("Artist", sentences[1], Field.Store.YES));
+                doc.add(new TextField("Title", sentences[2], Field.Store.YES));
+                doc.add(new TextField("Album", sentences[3], Field.Store.YES));
+                /*if (sentences[4] != "nan") {
+                	int year = Integer.parseInt(sentences[4]);
+                    doc.add(new IntPoint("Year", year));
+                }else {
+                	doc.add(new IntPoint("Year", 20000));
+                }*/
+                if (!sentences[4].isEmpty()) {
+                	int year = Integer.parseInt(sentences[4]);
+                	doc.add(new IntPoint("Year", year));
                 }
-            }
+                //doc.add(new TextField("Year", sentences[4], Field.Store.YES));
+                doc.add(new TextField("Date", sentences[5], Field.Store.YES));
+                doc.add(new TextField("Lyrics", sentences[6], Field.Store.YES));
+                doc.add(new TextField("contents", line, Field.Store.YES));
+                writer.addDocument(doc);
+                }
         }
     	catch(FileNotFoundException e){
         	System.out.println("File not found");
