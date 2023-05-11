@@ -13,6 +13,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
@@ -23,6 +24,12 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+
 
 public class WriteIndex
 {	
@@ -42,7 +49,7 @@ public class WriteIndex
             //org.apache.lucene.store.Directory instance
             Directory dir = FSDirectory.open( Paths.get(indexPath) );
              
-            //analyzer with the default stop words && stemming
+            //analyzer with the default stop words 
             CharArraySet stopWords = EnglishAnalyzer.getDefaultStopSet();
             StandardAnalyzer analyzer = new StandardAnalyzer(stopWords);
                
@@ -63,7 +70,31 @@ public class WriteIndex
             e.printStackTrace();
         }
     }
-     
+    
+    public static void stemmingLyrics(String fileName, String fieldName) throws IOException {
+        Analyzer analyzer1 = new StandardAnalyzer();
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] fields = line.split(",");
+            String text = fields[8]; // Assuming the first field contains the text to be analyzed
+            TokenStream tokenStream = analyzer1.tokenStream(fieldName, text);
+            tokenStream = new PorterStemFilter(tokenStream); // Add PorterStemFilter
+            CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+
+            tokenStream.reset();
+            while (tokenStream.incrementToken()) {
+                String term = charTermAttribute.toString();
+                System.out.println(term);
+            }
+            tokenStream.end();
+            tokenStream.close();
+        }
+        analyzer1.close();
+    }
+    
+
+    
     static void indexDocs(final IndexWriter writer, Path path) throws IOException
     {
         //Directory?
@@ -92,6 +123,7 @@ public class WriteIndex
         {
             //Index this file
             indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
+            stemmingLyrics("Eminem.csv", "Lyrics");
         }
     }
     
@@ -108,12 +140,6 @@ public class WriteIndex
                 doc.add(new TextField("Artist", sentences[1], Field.Store.YES));
                 doc.add(new TextField("Title", sentences[2], Field.Store.YES));
                 doc.add(new TextField("Album", sentences[3], Field.Store.YES));
-                /*if (sentences[4] != "nan") {
-                	int year = Integer.parseInt(sentences[4]);
-                    doc.add(new IntPoint("Year", year));
-                }else {
-                	doc.add(new IntPoint("Year", 20000));
-                }*/
                 if (!sentences[4].isEmpty()) {
                 	if (!sentences[4].equals("nan")) {
                 		try {
@@ -126,7 +152,6 @@ public class WriteIndex
                 		
                 	}
                 }
-                //doc.add(new TextField("Year", sentences[4], Field.Store.YES));
                 doc.add(new TextField("Date", sentences[5], Field.Store.YES));
                 doc.add(new TextField("Lyrics", sentences[6], Field.Store.YES));
                 doc.add(new TextField("contents", line, Field.Store.YES));

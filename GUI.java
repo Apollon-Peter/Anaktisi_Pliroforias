@@ -61,7 +61,7 @@ public class GUI extends JFrame implements ActionListener {
         searchBarPanel.add(searchHistoryButton);
         searchHistoryButton.addActionListener(this);
         
-      //Add the sortByYear Button
+        //Add the sortByYear Button
         sortButton = new JToggleButton("Sort by Year");
         searchBarPanel.add(sortButton);
         sortButton.addActionListener(this);
@@ -129,6 +129,7 @@ public class GUI extends JFrame implements ActionListener {
             searchResultsArea.setText(""); // clear the search results area 
             searchResultsArea.append(isSorted + searchResult + "\n");
             try {
+            	searchText = Read.stemmingUser(searchText);
                 Read.ReadIndex(selectedOption, searchText, searchResultsArea, sorted);
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
@@ -171,7 +172,7 @@ public class GUI extends JFrame implements ActionListener {
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:\\Users\\apoll\\Downloads\\LuceneDemo\\indexedFiles";
+    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 

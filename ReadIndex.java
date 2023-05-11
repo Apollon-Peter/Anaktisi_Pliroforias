@@ -3,7 +3,12 @@ package com.howtodoinjava.demo.lucene.file;
 import java.io.IOException;
 import java.nio.file.Paths;
 import javax.swing.*;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -54,6 +59,28 @@ public class ReadIndex
         }
     }
     
+    
+    public String stemmingUser(String usersrch) throws IOException {
+        Analyzer analyzer = new StandardAnalyzer();
+        String term = "";
+        String[] fields = usersrch.split(" $&#@[,\\s!]+");
+        for(String text : fields) {
+        	TokenStream tokenStream = analyzer.tokenStream(null, text);
+        	tokenStream = new PorterStemFilter(tokenStream); // Add PorterStemFilter
+            CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+            tokenStream.reset();
+            while (tokenStream.incrementToken()) {
+                term += charTermAttribute.toString();
+            }
+            tokenStream.end();
+            tokenStream.close();
+            analyzer.close();
+        }
+        return term;
+    }
+
+    
+    
     private void Searcher(String filterName, String srch, JTextArea TextArea, boolean sorted) throws Exception
     {
     	//Create lucene searcher. It search over a single IndexReader.
@@ -91,6 +118,12 @@ public class ReadIndex
                     }
                 	counter ++; //counting the num of hits
         		}
+        	}else {
+        		if (counter < ceiling && counter >= floor) {
+            		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("Title") + " | " + d.get("Album") + " | " + d.get("Year") + "\n	" + d.get("Lyrics") + "\n");
+                	num_prints ++; //used for printing "no results"
+                }
+            	counter ++; //counting the num of hits
         	}
         }
     }
