@@ -15,11 +15,9 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.document.IntField;
-import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -117,8 +115,16 @@ public class WriteIndex
                 	doc.add(new IntPoint("Year", 20000));
                 }*/
                 if (!sentences[4].isEmpty()) {
-                	int year = Integer.parseInt(sentences[4]);
-                	doc.add(new IntPoint("Year", year));
+                	if (!sentences[4].equals("nan")) {
+                		try {
+                			int year = Integer.parseInt(sentences[4]);
+                        	doc.add(new NumericDocValuesField("Year", year));
+                        	doc.add(new StoredField("Year", year));
+                		}catch (NumberFormatException e) {
+                			System.out.println(e);
+                		}
+                		
+                	}
                 }
                 //doc.add(new TextField("Year", sentences[4], Field.Store.YES));
                 doc.add(new TextField("Date", sentences[5], Field.Store.YES));

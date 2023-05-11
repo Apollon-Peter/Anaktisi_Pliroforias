@@ -83,11 +83,15 @@ public class ReadIndex
     	
     	for (ScoreDoc sd: foundDocs.scoreDocs) {
         	Document d = searcher.doc(sd.doc);
-        	if (counter < ceiling && counter >= floor) {
-        		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("Title") + " | " + d.get("Album") + " | " + d.get("Year") + "\n	" + d.get("Lyrics") + "\n");
-            	num_prints ++; //used for printing "no results"
-            }
-        	counter ++; //counting the num of hits
+        	if (sorted) {
+        		if (d.get("Year") != null) {
+        			if (counter < ceiling && counter >= floor) {
+                		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("Title") + " | " + d.get("Album") + " | " + d.get("Year") + "\n	" + d.get("Lyrics") + "\n");
+                    	num_prints ++; //used for printing "no results"
+                    }
+                	counter ++; //counting the num of hits
+        		}
+        	}
         }
     }
  
