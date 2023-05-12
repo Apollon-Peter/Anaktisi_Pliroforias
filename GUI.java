@@ -17,6 +17,7 @@ public class GUI extends JFrame implements ActionListener {
     private String searchHistory;
     private String selectedOption;
     private String searchText;
+    private String stemmedSearchText;
     private static ReadIndex Read;
     public JTextArea searchResultsArea;
     private JToggleButton sortButton;
@@ -82,7 +83,8 @@ public class GUI extends JFrame implements ActionListener {
         Highlighter highlighter = searchResultsArea.getHighlighter();
         Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
         String text = searchResultsArea.getText().toLowerCase();
-        String[] searchTerm = searchText.toLowerCase().split(" ");
+        String search = searchText + " " + stemmedSearchText;
+        String[] searchTerm = search.toLowerCase().split(" ");
         for (String i : searchTerm) {
         	int pos = text.indexOf(i);
             int lineCount = searchResultsArea.getLineCount();
@@ -129,8 +131,8 @@ public class GUI extends JFrame implements ActionListener {
             searchResultsArea.setText(""); // clear the search results area 
             searchResultsArea.append(isSorted + searchResult + "\n");
             try {
-            	searchText = Read.stemmingUser(searchText);
-                Read.ReadIndex(selectedOption, searchText, searchResultsArea, sorted);
+            	stemmedSearchText = Read.stemmingUser(searchText);
+                Read.ReadIndex(selectedOption, stemmedSearchText, searchResultsArea, sorted);
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
@@ -155,7 +157,7 @@ public class GUI extends JFrame implements ActionListener {
             searchResultsArea.setText(""); // clear the search results area 
             searchResultsArea.append(isSorted + searchResult + "\n");
             try {
-                Read.nextResults(selectedOption, searchText, searchResultsArea, sorted);
+                Read.nextResults(selectedOption, stemmedSearchText, searchResultsArea, sorted);
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
@@ -172,7 +174,7 @@ public class GUI extends JFrame implements ActionListener {
     public static void main(String[] args)
     {
     	try {
-    		String filePath = "C:\\Users\\ggian\\Desktop\\LuceneDemo\\indexedFiles";
+    		String filePath = "C:\\Users\\apoll\\Downloads\\LuceneDemo\\indexedFiles";
 
     		File file = new File(filePath);
 

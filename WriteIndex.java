@@ -24,8 +24,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -71,30 +69,6 @@ public class WriteIndex
         }
     }
     
-    public static void stemmingLyrics(String fileName, String fieldName) throws IOException {
-        Analyzer analyzer1 = new StandardAnalyzer();
-        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] fields = line.split(",");
-            String text = fields[8]; // Assuming the first field contains the text to be analyzed
-            TokenStream tokenStream = analyzer1.tokenStream(fieldName, text);
-            tokenStream = new PorterStemFilter(tokenStream); // Add PorterStemFilter
-            CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
-
-            tokenStream.reset();
-            while (tokenStream.incrementToken()) {
-                String term = charTermAttribute.toString();
-                System.out.println(term);
-            }
-            tokenStream.end();
-            tokenStream.close();
-        }
-        analyzer1.close();
-    }
-    
-
-    
     static void indexDocs(final IndexWriter writer, Path path) throws IOException
     {
         //Directory?
@@ -123,8 +97,28 @@ public class WriteIndex
         {
             //Index this file
             indexDoc(writer, path, Files.getLastModifiedTime(path).toMillis());
-            stemmingLyrics("Eminem.csv", "Lyrics");
         }
+    }
+    
+    static String Stemming(String ForStemming) throws IOException {
+    	//Stemming
+    	Analyzer analyzer1 = new StandardAnalyzer();
+        String term = "";
+        String[] sentence = ForStemming.split(" $&#@[,\\s!]+");
+        for (String word : sentence) {
+        	TokenStream tokenStream = analyzer1.tokenStream(null, word);
+            tokenStream = new PorterStemFilter(tokenStream);
+            CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+            
+            tokenStream.reset();
+            while (tokenStream.incrementToken()) {
+            	term += charTermAttribute.toString() + " ";
+            }
+            tokenStream.end();
+            tokenStream.close();
+        }
+        analyzer1.close();
+        return term;
     }
     
     static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
@@ -132,14 +126,25 @@ public class WriteIndex
     	Scanner reader = null;
     	try {
         	reader = new Scanner(new FileInputStream(name));
+        	String term = "";
         	String line = reader.nextLine();
             while (reader.hasNextLine()) {
                 line = reader.nextLine();
                 String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
                 Document doc = new Document();
+                
                 doc.add(new TextField("Artist", sentences[1], Field.Store.YES));
-                doc.add(new TextField("Title", sentences[2], Field.Store.YES));
-                doc.add(new TextField("Album", sentences[3], Field.Store.YES));
+                
+                //Stemming
+                term = Stemming(sentences[2]);
+                doc.add(new TextField("Title", term, Field.Store.YES));
+                doc.add(new TextField("PTitle", sentences[2], Field.Store.YES));
+                
+                //Stemming
+                term = Stemming(sentences[3]);
+                doc.add(new TextField("Album", term, Field.Store.YES));
+                doc.add(new TextField("PAlbum", sentences[3], Field.Store.YES));
+
                 if (!sentences[4].isEmpty()) {
                 	if (!sentences[4].equals("nan")) {
                 		try {
@@ -149,12 +154,20 @@ public class WriteIndex
                 		}catch (NumberFormatException e) {
                 			System.out.println(e);
                 		}
-                		
                 	}
                 }
+                
                 doc.add(new TextField("Date", sentences[5], Field.Store.YES));
-                doc.add(new TextField("Lyrics", sentences[6], Field.Store.YES));
-                doc.add(new TextField("contents", line, Field.Store.YES));
+                
+                //Stemming
+                term = Stemming(sentences[6]);
+                doc.add(new TextField("Lyrics", term, Field.Store.YES));
+                doc.add(new TextField("PLyrics", sentences[6], Field.Store.YES));
+                
+              //Stemming
+                term = Stemming(line);
+                doc.add(new TextField("contents", term, Field.Store.YES));
+                
                 writer.addDocument(doc);
                 }
         }

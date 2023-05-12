@@ -10,6 +10,8 @@ import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
@@ -59,7 +61,6 @@ public class ReadIndex
         }
     }
     
-    
     public String stemmingUser(String usersrch) throws IOException {
         Analyzer analyzer = new StandardAnalyzer();
         String term = "";
@@ -70,7 +71,7 @@ public class ReadIndex
             CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
             tokenStream.reset();
             while (tokenStream.incrementToken()) {
-                term += charTermAttribute.toString();
+                term += charTermAttribute.toString() + " ";
             }
             tokenStream.end();
             tokenStream.close();
@@ -91,8 +92,18 @@ public class ReadIndex
         if (sorted) {
             Sort sort = new Sort(new SortField("Year", SortField.Type.INT));
         	if (filterName != "No filter") {
-        		Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
-                foundDocs = searcher.search(query, 10000, sort);
+        		if(filterName != "Year") {
+        			Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
+                    foundDocs = searcher.search(query, 10000, sort);
+        		}else {
+        			String[] date = srch.split(" ");
+        			srch = "";
+        			for (String i : date) {
+        				srch += i;
+        			}
+        			Query query = NumericDocValuesField.newSlowExactQuery("Year", Long.parseLong(srch));
+        			foundDocs = searcher.search(query, 10000, sort);
+        		}
         	} else {
                 Query query = new QueryParser("contents", new StandardAnalyzer()).parse(srch);        
                 foundDocs = searcher.search(query, 10000, sort);
@@ -100,8 +111,18 @@ public class ReadIndex
         	
         } else {
         	if (filterName != "No filter") {
-        		Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
-                foundDocs = searcher.search(query, 10000);
+        		if(filterName != "Year") {
+        			Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
+                    foundDocs = searcher.search(query, 10000);
+        		}else {
+        			String[] date = srch.split(" ");
+        			srch = "";
+        			for (String i : date) {
+        				srch += i;
+        			}
+        			Query query = NumericDocValuesField.newSlowExactQuery("Year", Long.parseLong(srch));
+        			foundDocs = searcher.search(query, 10000);
+        		}
         	} else {
                 Query query = new QueryParser("contents", new StandardAnalyzer()).parse(srch);        
                 foundDocs = searcher.search(query, 10000);
@@ -113,14 +134,14 @@ public class ReadIndex
         	if (sorted) {
         		if (d.get("Year") != null) {
         			if (counter < ceiling && counter >= floor) {
-                		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("Title") + " | " + d.get("Album") + " | " + d.get("Year") + "\n	" + d.get("Lyrics") + "\n");
+                		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("PTitle") + " | " + d.get("PAlbum") + " | " + d.get("Year") + "\n	" + d.get("PLyrics") + "\n");
                     	num_prints ++; //used for printing "no results"
                     }
                 	counter ++; //counting the num of hits
         		}
         	}else {
         		if (counter < ceiling && counter >= floor) {
-            		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("Title") + " | " + d.get("Album") + " | " + d.get("Year") + "\n	" + d.get("Lyrics") + "\n");
+            		TextArea.append("\n	" + d.get("Artist") + " | " + d.get("PTitle") + " | " + d.get("PAlbum") + " | " + d.get("Year") + "\n	" + d.get("PLyrics") + "\n");
                 	num_prints ++; //used for printing "no results"
                 }
             	counter ++; //counting the num of hits
