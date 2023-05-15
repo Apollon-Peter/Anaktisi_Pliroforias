@@ -100,12 +100,13 @@ public class WriteIndex
         }
     }
     
+    // We use this function for stemming the inputFile's contents
     static String Stemming(String ForStemming) throws IOException {
     	//Stemming
     	Analyzer analyzer1 = new StandardAnalyzer();
         String term = "";
         String[] sentence = ForStemming.split(" $&#@[,\\s!]+");
-        for (String word : sentence) {
+        for (String word : sentence) { // For every word inside the sentences that we input in this function (stem it)
         	TokenStream tokenStream = analyzer1.tokenStream(null, word);
             tokenStream = new PorterStemFilter(tokenStream);
             CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
@@ -121,6 +122,7 @@ public class WriteIndex
         return term;
     }
     
+    // We use this function to create the indexedFiles
     static void indexDoc(IndexWriter writer, Path file, long lastModified) throws IOException {
         String name = file.toString();
     	Scanner reader = null;
@@ -128,23 +130,25 @@ public class WriteIndex
         	reader = new Scanner(new FileInputStream(name));
         	String term = "";
         	String line = reader.nextLine();
-            while (reader.hasNextLine()) {
+            while (reader.hasNextLine()) { // For each line in the csv file
                 line = reader.nextLine();
-                String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
+                String[] sentences = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)"); // We split it based on the ,
                 Document doc = new Document();
                 
+                // We add fields for the doc object and we assign values to them based on the csv formatting
                 doc.add(new TextField("Artist", sentences[1], Field.Store.YES));
                 
-                //Stemming
+                //Stemming (done selectively for some fields)
                 term = Stemming(sentences[2]);
-                doc.add(new TextField("Title", term, Field.Store.YES));
-                doc.add(new TextField("PTitle", sentences[2], Field.Store.YES));
+                doc.add(new TextField("Title", term, Field.Store.YES)); // One to stem 
+                doc.add(new TextField("PTitle", sentences[2], Field.Store.YES)); // One to print
                 
-                //Stemming
+                //Stemming (done selectively for some fields)
                 term = Stemming(sentences[3]);
                 doc.add(new TextField("Album", term, Field.Store.YES));
                 doc.add(new TextField("PAlbum", sentences[3], Field.Store.YES));
-
+                
+                // Adding the Year field 
                 if (!sentences[4].isEmpty()) {
                 	if (!sentences[4].equals("nan")) {
                 		try {
@@ -159,12 +163,12 @@ public class WriteIndex
                 
                 doc.add(new TextField("Date", sentences[5], Field.Store.YES));
                 
-                //Stemming
+                //Stemming (done selectively for some fields)
                 term = Stemming(sentences[6]);
                 doc.add(new TextField("Lyrics", term, Field.Store.YES));
                 doc.add(new TextField("PLyrics", sentences[6], Field.Store.YES));
                 
-              //Stemming
+                //Stemming (done selectively for some fields)
                 term = Stemming(line);
                 doc.add(new TextField("contents", term, Field.Store.YES));
                 

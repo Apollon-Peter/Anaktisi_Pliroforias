@@ -32,9 +32,11 @@ public class ReadIndex
     private int num_prints = 0;
     private int counter = 0;
     private int ceiling = 10;
- 
+    
+    // We use this function whenever we press the "Search" button
     public void ReadIndex(String filterName, String srch, JTextArea TextArea, boolean sorted) throws Exception
     {
+    	// With the following parameters we guarantee we only get the first 10 results of our search and whether or not we had any results at all
         floor = 0;
         num_prints = 0;
         counter = 0;
@@ -47,8 +49,10 @@ public class ReadIndex
         }
     }
     
+    // We use this function whenever we press the "Next 10 results" button
     public void nextResults(String filterName, String srch, JTextArea TextArea, boolean sorted) throws Exception
     {
+    	// With the following parameters we guarantee we get the next 10 results of our search and whether or not we had any results at all
         floor += 10;
         num_prints = 0;
         counter = 0;
@@ -61,27 +65,28 @@ public class ReadIndex
         }
     }
     
+    // Here we apply stemming on the user's input
     public String stemmingUser(String usersrch) throws IOException {
         Analyzer analyzer = new StandardAnalyzer();
         String term = "";
-        String[] fields = usersrch.split(" $&#@[,\\s!]+");
-        for(String text : fields) {
+        String[] fields = usersrch.split(" -$&#@[,\\s!]+"); // Split the input based on these characters
+        for(String text : fields) { // Stemming each word the user inputed 
         	TokenStream tokenStream = analyzer.tokenStream(null, text);
         	tokenStream = new PorterStemFilter(tokenStream); // Add PorterStemFilter
             CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
             tokenStream.reset();
             while (tokenStream.incrementToken()) {
-                term += charTermAttribute.toString() + " ";
+                term += charTermAttribute.toString() + " "; // Save it in the String term
             }
             tokenStream.end();
             tokenStream.close();
             analyzer.close();
         }
-        return term;
+        return term; // Return the stemmed input
     }
 
     
-    
+    // With this function we search our indexed files by also applying the necessary filters
     private void Searcher(String filterName, String srch, JTextArea TextArea, boolean sorted) throws Exception
     {
     	//Create lucene searcher. It search over a single IndexReader.
@@ -89,13 +94,13 @@ public class ReadIndex
         IndexSearcher searcher = createSearcher();
         TopDocs foundDocs;
         
-        if (sorted) {
-            Sort sort = new Sort(new SortField("Year", SortField.Type.INT));
-        	if (filterName != "No filter") {
-        		if(filterName != "Year") {
+        if (sorted) { // If "Sort by Year" is On
+            Sort sort = new Sort(new SortField("Year", SortField.Type.INT)); // We create the sort object that is going to sort the results 
+        	if (filterName != "No filter") { // If there are filters
+        		if(filterName != "Year") { // If the filter is not "Year"
         			Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
                     foundDocs = searcher.search(query, 10000, sort);
-        		}else {
+        		}else { // If the filter is "Year"
         			String[] date = srch.split(" ");
         			srch = "";
         			for (String i : date) {
@@ -104,17 +109,17 @@ public class ReadIndex
         			Query query = NumericDocValuesField.newSlowExactQuery("Year", Long.parseLong(srch));
         			foundDocs = searcher.search(query, 10000, sort);
         		}
-        	} else {
+        	} else { // If there are no filters
                 Query query = new QueryParser("contents", new StandardAnalyzer()).parse(srch);        
                 foundDocs = searcher.search(query, 10000, sort);
         	}
         	
-        } else {
-        	if (filterName != "No filter") {
-        		if(filterName != "Year") {
+        } else { // If "Sort by Year" is Off
+        	if (filterName != "No filter") { // If there are filters
+        		if(filterName != "Year") { // If the filter is not "Year"
         			Query query = new QueryParser(filterName, new StandardAnalyzer()).parse(srch);
                     foundDocs = searcher.search(query, 10000);
-        		}else {
+        		}else { // If the filter is "Year"
         			String[] date = srch.split(" ");
         			srch = "";
         			for (String i : date) {
@@ -123,13 +128,15 @@ public class ReadIndex
         			Query query = NumericDocValuesField.newSlowExactQuery("Year", Long.parseLong(srch));
         			foundDocs = searcher.search(query, 10000);
         		}
-        	} else {
+        	} else { // If there are no filters
                 Query query = new QueryParser("contents", new StandardAnalyzer()).parse(srch);        
                 foundDocs = searcher.search(query, 10000);
         	}
-        }
-    	
-    	for (ScoreDoc sd: foundDocs.scoreDocs) {
+        } 
+        // In every case above, we create a query object in which we input the field we want to search in
+    	// and we also create a sort object in some cases. The query and the sort objects are then used as parameters for our search method.
+        
+    	for (ScoreDoc sd: foundDocs.scoreDocs) { // For each hit
         	Document d = searcher.doc(sd.doc);
         	if (sorted) {
         		if (d.get("Year") != null) {

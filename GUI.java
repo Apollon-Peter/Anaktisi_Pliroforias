@@ -37,7 +37,7 @@ public class GUI extends JFrame implements ActionListener {
         searchBarPanel.setLayout(new FlowLayout());
         add(searchBarPanel, BorderLayout.NORTH);
 
-        // Add the search dropdown
+        // Add the filters drop-down
         String[] searchOptions = {"No filter", "Artist", "Title", "Album", "Year", "Date", "Lyrics"};
         searchDropdown = new JComboBox<String>(searchOptions);
         searchBarPanel.add(searchDropdown);
@@ -71,7 +71,7 @@ public class GUI extends JFrame implements ActionListener {
         searchResultsArea = new JTextArea(10, 50);
         add(new JScrollPane(searchResultsArea), BorderLayout.CENTER);
 
-        // Initialize the search history
+        // Initialise the search history
         searchHistory = "";
 
         // Display the JFrame
@@ -81,11 +81,11 @@ public class GUI extends JFrame implements ActionListener {
     public void Highlight() {
     	//Highlight text
         Highlighter highlighter = searchResultsArea.getHighlighter();
-        Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-        String text = searchResultsArea.getText().toLowerCase();
+        Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW); // Change the highlight colour to yellow
+        String text = searchResultsArea.getText().toLowerCase(); // make it insensitive to capitalisation
         String search = searchText + " " + stemmedSearchText;
-        String[] searchTerm = search.toLowerCase().split(" ");
-        for (String i : searchTerm) {
+        String[] searchTerm = search.toLowerCase().split(" "); // make it insensitive to capitalisation
+        for (String i : searchTerm) { // for every appearance of the searched term 
         	int pos = text.indexOf(i);
             int lineCount = searchResultsArea.getLineCount();
             int startLine = Math.min(2, lineCount); // start searching from line 2 or last line if there are fewer than 2 lines
@@ -102,7 +102,7 @@ public class GUI extends JFrame implements ActionListener {
 				}
                 int endpos = pos + i.length();
                 try {
-                    highlighter.addHighlight(pos, endpos, painter);
+                    highlighter.addHighlight(pos, endpos, painter); // highlight the word
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
@@ -110,10 +110,12 @@ public class GUI extends JFrame implements ActionListener {
             }
         }
     }
-
+    
+    // With this method we give the buttons functionality and we check if they are pressed or not
     public void actionPerformed(ActionEvent e)
     {
     	if (e.getSource() == searchButton) {
+    		// Set the filters and the searched term
     		sorted = sort;
             selectedOption = (String) searchDropdown.getSelectedItem();
             searchText = searchField.getText();
@@ -132,18 +134,18 @@ public class GUI extends JFrame implements ActionListener {
             searchResultsArea.append(isSorted + searchResult + "\n");
             try {
             	stemmedSearchText = Read.stemmingUser(searchText);
-                Read.ReadIndex(selectedOption, stemmedSearchText, searchResultsArea, sorted);
+                Read.ReadIndex(selectedOption, stemmedSearchText, searchResultsArea, sorted); // search and show results
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
-            searchHistory += searchResult + searchText + "\n";
+            searchHistory += searchResult + searchText + "\n"; // add to history
             nextResultsButton.setEnabled(true);
             Highlight();
         } else if (e.getSource() == searchHistoryButton) {
             // Display the search history
             JOptionPane.showMessageDialog(this, "Search history:\n" + searchHistory);
         } else if (e.getSource() == nextResultsButton) {
-            // Perform search operation based on selectedOption and searchText
+            // Perform search operation for the next 10 results
             String searchResult = "";
             String isSorted = "";
             if(sorted) {
@@ -157,7 +159,7 @@ public class GUI extends JFrame implements ActionListener {
             searchResultsArea.setText(""); // clear the search results area 
             searchResultsArea.append(isSorted + searchResult + "\n");
             try {
-                Read.nextResults(selectedOption, stemmedSearchText, searchResultsArea, sorted);
+                Read.nextResults(selectedOption, stemmedSearchText, searchResultsArea, sorted); // Search and show the next 10 results
             }catch (Exception err) {
             	System.out.println("Error occured " + err.getMessage());
             }
@@ -179,12 +181,12 @@ public class GUI extends JFrame implements ActionListener {
     		File file = new File(filePath);
 
     		FileUtils.deleteDirectory(file);
-
-    		file.delete();
+    		
+    		file.delete(); // Delete the indexedFiles folder so that we can write everything again each time we run the program
     		ReadIndex Reader = new ReadIndex();
     		Read = Reader;
     		WriteIndex Writer = new WriteIndex();
-        	Writer.WriteIndex();
+        	Writer.WriteIndex(); // Write the indexedFiles
             GUI demo = new GUI();
     	}catch (Exception err) {
         	System.out.println("Error occured " + err.getMessage());
